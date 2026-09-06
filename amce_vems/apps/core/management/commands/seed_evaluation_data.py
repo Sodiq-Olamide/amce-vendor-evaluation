@@ -270,19 +270,14 @@ class Command(BaseCommand):
         admin_group = Group.objects.get(name='Super Administrator')
         admin_user.groups.add(admin_group)
 
-        profile, _ = EvaluatorProfile.objects.get_or_create(
+        EvaluatorProfile.objects.get_or_create(
             user=admin_user,
             defaults={
                 'employee_id': 'AMCE-ADM-001',
                 'designation': 'Lead System Administrator',
                 'department': dept_map.get('Nursing Services'),
-                'can_access_executive_dashboard': True,
-                'can_export_excel': True
             }
         )
-        profile.can_access_executive_dashboard = True
-        profile.can_export_excel = True
-        profile.save()
 
         # Remove any stray demo accounts if this runs on a new DB
         User.objects.exclude(username='admin').delete()
