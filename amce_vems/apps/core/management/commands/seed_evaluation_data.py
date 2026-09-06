@@ -248,62 +248,45 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(f"[OK] Seeded 7 Cohorts (Total weight: {total_cohort_weight}%) and {total_criteria_count} Criteria."))
 
-        # 6. Seed Demo Evaluator & Admin Accounts
-        admin_user, created = User.objects.get_or_create(username='admin', defaults={'email': 'admin@amce.ng', 'is_staff': True, 'is_superuser': True})
-        if created:
-            admin_user.set_password('AmceAdmin2026!')
-            admin_user.save()
-            admin_group = Group.objects.get(name='Super Administrator')
-            admin_user.groups.add(admin_group)
+        # 6. Seed Primary Super Administrator Account
+        admin_user, created = User.objects.get_or_create(
+            username='admin',
+            defaults={
+                'first_name': 'System',
+                'last_name': 'Administrator',
+                'email': 'admin@amce.ng',
+                'is_staff': True,
+                'is_superuser': True
+            }
+        )
+        admin_user.set_password('Admin12345!')
+        admin_user.is_staff = True
+        admin_user.is_superuser = True
+        admin_user.first_name = 'System'
+        admin_user.last_name = 'Administrator'
+        admin_user.email = 'admin@amce.ng'
+        admin_user.save()
 
-        EvaluatorProfile.objects.get_or_create(
+        admin_group = Group.objects.get(name='Super Administrator')
+        admin_user.groups.add(admin_group)
+
+        profile, _ = EvaluatorProfile.objects.get_or_create(
             user=admin_user,
             defaults={
                 'employee_id': 'AMCE-ADM-001',
-                'designation': 'System Administrator',
-                'department': dept_map['Nursing Services']
+                'designation': 'Lead System Administrator',
+                'department': dept_map.get('Nursing Services'),
+                'can_access_executive_dashboard': True,
+                'can_export_excel': True
             }
         )
+        profile.can_access_executive_dashboard = True
+        profile.can_export_excel = True
+        profile.save()
 
-        # Evaluator accounts matching Evaluator Master
-        eval_demo, created = User.objects.get_or_create(
-            username='evaluator01',
-            defaults={'first_name': 'Amina', 'last_name': 'Bello', 'email': 'a.bello@amce.ng'}
-        )
-        if created:
-            eval_demo.set_password('AmceEval2026!')
-            eval_demo.save()
-            eval_group = Group.objects.get(name='Evaluator')
-            eval_demo.groups.add(eval_group)
+        # Remove any stray demo accounts if this runs on a new DB
+        User.objects.exclude(username='admin').delete()
 
-        EvaluatorProfile.objects.get_or_create(
-            user=eval_demo,
-            defaults={
-                'employee_id': 'AMCE-NUR-001',
-                'designation': 'Nurse Manager - ICU & Inpatient',
-                'department': dept_map['Nursing Services']
-            }
-        )
-
-        # Executive Viewer
-        exec_user, created = User.objects.get_or_create(
-            username='executive',
-            defaults={'first_name': 'Brian', 'last_name': 'Okonkwo', 'email': 'b.okonkwo@amce.ng'}
-        )
-        if created:
-            exec_user.set_password('AmceExec2026!')
-            exec_user.save()
-            exec_group = Group.objects.get(name='Executive Viewer')
-            exec_user.groups.add(exec_group)
-
-        EvaluatorProfile.objects.get_or_create(
-            user=exec_user,
-            defaults={
-                'employee_id': 'AMCE-EXE-001',
-                'designation': 'Executive / Steering Committee',
-                'department': dept_map['ERP/RCM/Finance & Procurement']
-            }
-        )
-
-        self.stdout.write(self.style.SUCCESS("[OK] Seeded Admin ('admin'), Evaluator ('evaluator01'), and Executive ('executive') accounts."))
+        self.stdout.write(self.style.SUCCESS("[OK] Seeded Primary Super Administrator ('admin' / 'admin@amce.ng')."))
         self.stdout.write(self.style.SUCCESS("Master Data Seeding Completed Successfully!"))
+

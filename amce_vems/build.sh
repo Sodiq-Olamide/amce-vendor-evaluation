@@ -11,3 +11,7 @@ python manage.py migrate --noinput
 
 # Collect static files into staticfiles/
 python manage.py collectstatic --noinput
+
+# Automatically seed Master Data (Vendors, 50 Criteria, Calendar, and Super Admin 'admin')
+python manage.py seed_evaluation_data
+
