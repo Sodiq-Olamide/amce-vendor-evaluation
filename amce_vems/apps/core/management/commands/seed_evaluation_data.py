@@ -278,10 +278,6 @@ class Command(BaseCommand):
                 'department': dept_map.get('Nursing Services'),
             }
         )
-
-        # Remove any stray demo accounts if this runs on a new DB
-        User.objects.exclude(username='admin').delete()
-
         self.stdout.write(self.style.SUCCESS("[OK] Seeded Primary Super Administrator ('admin' / 'admin@amce.ng')."))
         self.stdout.write(self.style.SUCCESS("Master Data Seeding Completed Successfully!"))
 
