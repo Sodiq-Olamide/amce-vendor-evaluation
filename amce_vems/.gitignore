@@ -3,22 +3,24 @@
 # ==============================================================================
 
 # 0.1 
-all_forms_content.txt
-AMCE_HIS_Vendor_Evaluation_Enterprise_Blueprint.md 
-AMCE_HIS_Vendor_Evaluation_Forms_Prototype.xlsx
-AMCE_VEMS_Production_Deployment_Guide.docx
-dashboard_clean.txt
-forms_1_to_3.txt
-forms_sample.txt
-forms_spec_sample.txt
-full_forms_dump.json
-full_scoring_dump.json
-notes_to_support_team.txt
-quick_start_cheatsheet.md
-scratch.md
-sheets_overview.json
-VEMS_ERD_ER_Schema_Diagram.png
-walkthrough.md
+.all_forms_content.txt
+    .AMCE_HIS_Vendor_Evaluation_Enterprise_Blueprint.md 
+.AMCE_HIS_Vendor_Evaluation_Forms_Prototype.xlsx
+.AMCE_VEMS_Production_Deployment_Guide.docx
+.dashboard_clean.txt
+.forms_1_to_3.txt
+.forms_sample.txt
+.forms_spec_sample.txt
+.full_forms_dump.json
+.full_scoring_dump.json
+.notes_to_support_team.txt
+.quick_start_cheatsheet.md
+.scratch.md
+.sheets_overview.json
+.VEMS_ERD_ER_Schema_Diagram.png
+.walkthrough.md
+
+
 # 1. Environment & Sensitive Credentials
 .env
 .env.*
