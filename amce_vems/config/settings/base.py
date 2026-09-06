@@ -136,10 +136,12 @@ REST_FRAMEWORK = {
     ],
 }
 
-CSRF_TRUSTED_ORIGINS = os.environ.get(
-    'CSRF_TRUSTED_ORIGINS',
-    'https://*.railway.app,http://localhost:8000,http://127.0.0.1:8000'
-).split(',')
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip() for origin in os.environ.get(
+        'CSRF_TRUSTED_ORIGINS',
+        'https://*.onrender.com,https://*.railway.app,http://localhost:8000,http://127.0.0.1:8000'
+    ).split(',') if origin.strip()
+]
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
