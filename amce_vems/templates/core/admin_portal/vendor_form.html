@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} | AMCE VEMS Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0" style="max-width: 800px;">
+    <div class="mb-4 pb-3 border-bottom">
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <a href="{% url 'admin_vendor_list' %}" class="text-decoration-none text-muted small"><i class="bi bi-arrow-left"></i> Back to Vendors</a>
+        </div>
+        <h2 class="h3 fw-bold text-dark mb-1">{{ title }}</h2>
+        <p class="text-muted small mb-0">Fill in the EHR solution specifications and contact details for live evaluation tracking.</p>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-body p-4">
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">Vendor Code <span class="text-danger">*</span></label>
+                        {{ form.code }}
+                        <div class="form-text">Unique system identifier (e.g. EZCARE, EPIC).</div>
+                        {% if form.code.errors %}<div class="text-danger small mt-1">{{ form.code.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label fw-bold small">Company / Vendor Name <span class="text-danger">*</span></label>
+                        {{ form.name }}
+                        {% if form.name.errors %}<div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-7">
+                        <label class="form-label fw-bold small">Solution Product Name <span class="text-danger">*</span></label>
+                        {{ form.solution_name }}
+                        {% if form.solution_name.errors %}<div class="text-danger small mt-1">{{ form.solution_name.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold small">Solution Version</label>
+                        {{ form.solution_version }}
+                        {% if form.solution_version.errors %}<div class="text-danger small mt-1">{{ form.solution_version.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Lead Presenter</label>
+                        {{ form.lead_presenter }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Contact Email</label>
+                        {{ form.contact_email }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">Contact Phone</label>
+                    {{ form.contact_phone }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">Overview / Architecture Description</label>
+                    {{ form.overview_description }}
+                    <div class="form-text">Key notes regarding hosting, on-premise/cloud, interoperability, etc.</div>
+                </div>
+
+                <div class="mb-4 form-check form-switch">
+                    {{ form.is_active }}
+                    <label class="form-check-label fw-bold small ms-2" for="{{ form.is_active.id_for_label }}">Active Vendor (Included in live scoring and executive calculations)</label>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                    <a href="{% url 'admin_vendor_list' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                    <button type="submit" class="btn btn-primary px-4 shadow-sm">
+                        <i class="bi bi-check2-circle me-1"></i> Save Vendor Profile
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

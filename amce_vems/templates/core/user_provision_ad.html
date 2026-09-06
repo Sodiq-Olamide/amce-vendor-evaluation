@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - AMCE Evaluation Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center pb-5">
+    <div class="col-lg-9 col-xl-8">
+        <div class="card card-amce shadow-sm border-0">
+            <div class="card-header-amce p-3 d-flex justify-content-between align-items-center bg-white border-bottom">
+                <div>
+                    <span class="fw-bold fs-5 text-dark">
+                        <i class="bi bi-microsoft text-primary me-2"></i>{{ title }}
+                    </span>
+                    <div class="text-muted small">
+                        Lookup organization staff from Active Directory / Entra ID, auto-fill verified credentials, and assign evaluation roles.
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{% url 'user_create' %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-person-plus me-1"></i> Standard Manual Provision
+                    </a>
+                    <a href="{% url 'user_management_list' %}" class="btn btn-outline-dark btn-sm">
+                        &larr; Back to Users
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-body p-4">
+                <!-- AD Status Indicator Banner -->
+                <div class="alert {% if is_azure_ad_live %}alert-success{% else %}alert-info{% endif %} d-flex align-items-center justify-content-between mb-4 py-2 px-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi {% if is_azure_ad_live %}bi-cloud-check-fill fs-4 text-success{% else %}bi-hdd-network-fill fs-4 text-primary{% endif %}"></i>
+                        <div>
+                            <strong>Directory Status:</strong>
+                            {% if is_azure_ad_live %}
+                                Connected live to <strong>Microsoft Entra ID (Azure AD)</strong> Graph Directory.
+                            {% else %}
+                                Connected to <strong>AMCE Internal Active Directory Service</strong> (Ready for Azure AD / LDAP Binding).
+                            {% endif %}
+                        </div>
+                    </div>
+                    <span class="badge {% if is_azure_ad_live %}bg-success{% else %}bg-primary{% endif %} px-2 py-1">AD Sync Active</span>
+                </div>
+
+                {% if form.errors %}
+                    <div class="alert alert-danger d-flex align-items-center gap-2 mb-4">
+                        <i class="bi bi-exclamation-octagon-fill fs-5"></i>
+                        <div>Please correct the errors indicated below.</div>
+                    </div>
+                {% endif %}
+
+                <form method="post" id="adProvisionForm" novalidate>
+                    {% csrf_token %}
+
+                    <!-- Step 1: AD Directory Selection Dropdown / Fast Search -->
+                    <div class="p-3 mb-4 rounded border bg-light">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="fw-bold text-dark mb-0">
+                                <i class="bi bi-search text-primary me-1"></i>Step 1: Select Staff Member from Active Directory
+                            </label>
+                            <span class="text-muted small"><i class="bi bi-lightning-charge-fill text-warning me-1"></i>Instant Auto-fill</span>
+                        </div>
+                        <div class="small text-muted mb-3">
+                            Choosing an organization email automatically retrieves their verified <strong>Username</strong>, <strong>First Name</strong>, <strong>Last Name</strong>, and <strong>Official Designation</strong> from Active Directory.
+                        </div>
+
+                        <select id="ad_user_select" class="form-select form-select-lg border-primary mb-2" style="font-size: 0.95rem;">
+                            <option value="">-- Choose Staff Member by Email or Name --</option>
+                            {% for u in directory_users %}
+                                <option value="{{ u.email }}" 
+                                        data-first-name="{{ u.first_name }}" 
+                                        data-last-name="{{ u.last_name }}" 
+                                        data-designation="{{ u.designation }}"
+                                        data-department="{{ u.department }}">
+                                    {{ u.first_name }} {{ u.last_name }} &bull; {{ u.email }} &bull; [{{ u.designation }}]
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="text-muted small">
+                            <i class="bi bi-info-circle me-1"></i>You can also type any registered organization email directly in the field below.
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Auto-Filled Profile Details (From AD) -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-secondary border-bottom pb-2 mb-3">
+                            <i class="bi bi-person-badge-fill me-1"></i>Step 2: Auto-Filled Identity Details (From AD)
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label small fw-semibold">Official AMCE Email / Username <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white text-muted"><i class="bi bi-envelope-at"></i></span>
+                                    <input type="email" name="email" id="id_email" class="form-control" value="{{ form.email.value|default:'' }}" placeholder="e.g. name@amce.org" required>
+                                </div>
+                                {% if form.email.errors %}
+                                    <div class="text-danger small mt-1">{{ form.email.errors|striptags }}</div>
+                                {% endif %}
+                                <div class="text-muted small mt-1">This email serves as the login username and is authenticated against your organization AD.</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">First Name <span class="text-danger">*</span></label>
+                                <input type="text" name="first_name" id="id_first_name" class="form-control" value="{{ form.first_name.value|default:'' }}" required>
+                                {% if form.first_name.errors %}
+                                    <div class="text-danger small mt-1">{{ form.first_name.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Last Name / Surname <span class="text-danger">*</span></label>
+                                <input type="text" name="last_name" id="id_last_name" class="form-control" value="{{ form.last_name.value|default:'' }}" required>
+                                {% if form.last_name.errors %}
+                                    <div class="text-danger small mt-1">{{ form.last_name.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-12">
+                                <label class="form-label small fw-semibold">Official Designation / Title (From AD)</label>
+                                <input type="text" name="designation" id="id_designation" class="form-control" value="{{ form.designation.value|default:'' }}" placeholder="e.g. Nurse Manager, Chief Medical Officer, Clinical Specialist">
+                                {% if form.designation.errors %}
+                                    <div class="text-danger small mt-1">{{ form.designation.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Administrator Assignment (Department & Role) -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-secondary border-bottom pb-2 mb-3">
+                            <i class="bi bi-diagram-3-fill me-1"></i>Step 3: Assign Evaluation Department &amp; Access Role
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label small fw-semibold">Assigned Hospital Department <span class="text-danger">*</span></label>
+                                {{ form.department }}
+                                {% if form.department.errors %}
+                                    <div class="text-danger small mt-1">{{ form.department.errors|striptags }}</div>
+                                {% endif %}
+                                <div class="text-muted small mt-1">Select which clinical or operational unit this evaluator represents during vendor scoring.</div>
+                            </div>
+
+                            <div class="col-12 mt-3">
+                                <label class="form-label small fw-semibold d-block">Account Role &amp; Access Level <span class="text-danger">*</span></label>
+                                <div class="vstack gap-2">
+                                    {% for radio in form.role %}
+                                    <div class="form-check p-2 bg-light rounded border {% if radio.is_checked %}border-primary bg-primary-subtle{% endif %}">
+                                        {{ radio.tag }}
+                                        <label class="form-check-label fw-semibold ms-2" for="{{ radio.id_for_label }}">
+                                            {{ radio.choice_label }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% if form.role.errors %}
+                                    <div class="text-danger small mt-1">{{ form.role.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Special Privileges (Executive Dashboard & Excel Export) -->
+                    <div class="mb-4 p-3 bg-light rounded border">
+                        <h6 class="fw-bold text-dark border-bottom pb-2 mb-2">
+                            <i class="bi bi-shield-lock-fill text-warning me-1"></i>Step 4: Special Capability Privileges
+                        </h6>
+                        <div class="text-muted small mb-3">
+                            Optionally grant Executive Dashboard or Multi-Vendor Excel Export access to this evaluator.
+                        </div>
+
+                        <div class="vstack gap-2">
+                            <div class="form-check form-switch p-2 bg-white rounded border ps-5">
+                                {{ form.grant_executive_dashboard }}
+                                <label class="form-check-label fw-bold text-dark" for="{{ form.grant_executive_dashboard.id_for_label }}">
+                                    <i class="bi bi-bar-chart-line-fill text-primary me-1"></i>Executive Dashboard &amp; Sensitivity Simulator
+                                </label>
+                            </div>
+
+                            <div class="form-check form-switch p-2 bg-white rounded border ps-5">
+                                {{ form.grant_export_excel }}
+                                <label class="form-check-label fw-bold text-dark" for="{{ form.grant_export_excel.id_for_label }}">
+                                    <i class="bi bi-file-earmark-excel-fill text-success me-1"></i>Export Multi-Vendor Scorecard Excel (.xlsx)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="pt-3 border-top d-flex justify-content-between align-items-center">
+                        <a href="{% url 'user_management_list' %}" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary px-4 py-2 fw-semibold">
+                            <i class="bi bi-person-check-fill me-1"></i> Provision &amp; Link User from Active Directory
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectElem = document.getElementById('ad_user_select');
+    const emailInput = document.getElementById('id_email');
+    const firstNameInput = document.getElementById('id_first_name');
+    const lastNameInput = document.getElementById('id_last_name');
+    const designationInput = document.getElementById('id_designation');
+    const deptSelect = document.getElementById('id_department');
+
+    if (selectElem) {
+        selectElem.addEventListener('change', function() {
+            const selectedOpt = this.options[this.selectedIndex];
+            if (!selectedOpt.value) return;
+
+            const email = selectedOpt.value;
+            const firstName = selectedOpt.getAttribute('data-first-name') || '';
+            const lastName = selectedOpt.getAttribute('data-last-name') || '';
+            const designation = selectedOpt.getAttribute('data-designation') || '';
+            const deptName = (selectedOpt.getAttribute('data-department') || '').toLowerCase();
+
+            // Populate inputs
+            if (emailInput) emailInput.value = email;
+            if (firstNameInput) firstNameInput.value = firstName;
+            if (lastNameInput) lastNameInput.value = lastName;
+            if (designationInput) designationInput.value = designation;
+
+            // Smart-match department dropdown
+            if (deptSelect && deptName) {
+                for (let i = 0; i < deptSelect.options.length; i++) {
+                    const optText = deptSelect.options[i].text.toLowerCase();
+                    if (optText.includes(deptName) || deptName.includes(optText)) {
+                        deptSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+        });
+    }
+
+    // Also support typing email directly with AJAX lookup
+    if (emailInput) {
+        emailInput.addEventListener('blur', function() {
+            const val = this.value.trim();
+            if (val.includes('@') && (!firstNameInput.value || !lastNameInput.value)) {
+                fetch(`{% url 'ad_user_lookup_api' %}?email=${encodeURIComponent(val)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success && data.user) {
+                            if (!firstNameInput.value) firstNameInput.value = data.user.first_name || '';
+                            if (!lastNameInput.value) lastNameInput.value = data.user.last_name || '';
+                            if (!designationInput.value) designationInput.value = data.user.designation || '';
+                        }
+                    })
+                    .catch(err => console.log('AD lookup err:', err));
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

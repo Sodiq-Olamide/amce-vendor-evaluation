@@ -1,0 +1,26 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | AMCE VEMS Admin{% endblock %}
+
+{% block branding %}
+<div id="site-name" style="display: flex; align-items: center; gap: 12px; padding: 4px 0;">
+    <img src="{% static 'img/amce_logo.jpg' %}" alt="AMCE Logo" style="height: 36px; width: 36px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
+    <div>
+        <a href="{% url 'admin:index' %}" style="font-weight: 700; font-size: 1.15rem; color: #FFFFFF; text-decoration: none; letter-spacing: -0.02em;">
+            AMCE HIS Evaluation Portal
+        </a>
+        <div style="font-size: 0.72rem; color: #94A3B8; font-weight: 500;">
+            Administration &bull; User Provisioning (Admin / Exec / Evaluator)
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block nav-global %}
+<div style="float: right; margin-top: 10px; margin-right: 20px;">
+    <a href="/" style="background: rgba(255,255,255,0.1); color: #FFF; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem; font-weight: 600;">
+        &larr; Return to Scoring Portal
+    </a>
+</div>
+{% endblock %}

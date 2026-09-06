@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} | AMCE VEMS Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0" style="max-width: 750px;">
+    <div class="mb-4 pb-3 border-bottom">
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <a href="{% url 'admin_cohort_criteria' cohort.id %}" class="text-decoration-none text-muted small"><i class="bi bi-arrow-left"></i> Back to {{ cohort.name }} Criteria</a>
+        </div>
+        <h2 class="h3 fw-bold text-dark mb-1">{{ title }}</h2>
+        <p class="text-muted small mb-0">Cohort #{{ cohort.cohort_number }} &bull; Define rubric prompt, weight within cohort, and score threshold requiring mandatory evidence notes.</p>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-body p-4">
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small">Criterion # <span class="text-danger">*</span></label>
+                        {{ form.criterion_number }}
+                        {% if form.criterion_number.errors %}<div class="text-danger small mt-1">{{ form.criterion_number.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-9">
+                        <label class="form-label fw-bold small">Criterion Name <span class="text-danger">*</span></label>
+                        {{ form.name }}
+                        {% if form.name.errors %}<div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Weight in Cohort (%) <span class="text-danger">*</span></label>
+                        {{ form.weight_percentage }}
+                        <div class="form-text">Percentage share within this cohort (e.g. 15.00).</div>
+                        {% if form.weight_percentage.errors %}<div class="text-danger small mt-1">{{ form.weight_percentage.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Mandatory Evidence Threshold</label>
+                        {{ form.requires_evidence_threshold }}
+                        <div class="form-text">Scores at or below this value mandate evaluator notes. Default: 3.0</div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">Live Demonstration Prompt <span class="text-danger">*</span></label>
+                    {{ form.demo_prompt }}
+                    <div class="form-text">Detailed requirement prompt presented during vendor live demonstration.</div>
+                    {% if form.demo_prompt.errors %}<div class="text-danger small mt-1">{{ form.demo_prompt.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold small">Scoring Guidance Notes / Rubric</label>
+                    {{ form.guidance_notes }}
+                    <div class="form-text">Benchmarking guidance shown to clinical evaluators.</div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                    <a href="{% url 'admin_cohort_criteria' cohort.id %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                    <button type="submit" class="btn btn-primary px-4 shadow-sm">
+                        <i class="bi bi-check2-circle me-1"></i> Save Criterion
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

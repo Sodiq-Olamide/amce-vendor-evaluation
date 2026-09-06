@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Preview Template: {{ tpl.title }} - AMCE VEMS Admin{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center pb-5">
+    <div class="col-lg-9 col-xl-8">
+        <div class="card card-amce shadow-sm border-0 mb-4">
+            <div class="card-header-amce p-3 d-flex justify-content-between align-items-center bg-white border-bottom">
+                <div>
+                    <span class="fw-bold fs-5 text-dark">
+                        <i class="bi bi-eye text-info me-2"></i>Live Rendered Preview
+                    </span>
+                    <div class="text-muted small">Simulated preview showing dynamic tag replacements with sample evaluator data.</div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{% url 'admin_email_template_edit' tpl.id %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-pencil me-1"></i> Edit Template
+                    </a>
+                    <a href="{% url 'admin_email_templates_list' %}" class="btn btn-outline-secondary btn-sm">
+                        &larr; Back to Templates
+                    </a>
+                </div>
+            </div>
+
+            <!-- Envelope Header Info -->
+            <div class="card-body bg-light border-bottom p-3">
+                <div class="row g-2 small">
+                    <div class="col-sm-2 text-muted fw-bold text-uppercase">From:</div>
+                    <div class="col-sm-10 font-monospace text-dark">{{ tpl.from_name }} &lt;{{ tpl.from_email }}&gt;</div>
+                    <div class="col-sm-2 text-muted fw-bold text-uppercase">Subject:</div>
+                    <div class="col-sm-10 fw-bold text-primary">{{ rendered_subject }}</div>
+                    <div class="col-sm-2 text-muted fw-bold text-uppercase">Recipient:</div>
+                    <div class="col-sm-10 font-monospace text-secondary">{{ sample_context.first_name }} {{ sample_context.last_name }} &lt;{{ sample_context.email }}&gt;</div>
+                </div>
+            </div>
+
+            <!-- Rendered Body Frame -->
+            <div class="card-body p-4 bg-white">
+                <div class="border rounded p-3 bg-light">
+                    {{ rendered_html|safe }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

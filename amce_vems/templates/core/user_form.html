@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - AMCE Evaluation Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center pb-5">
+    <div class="col-lg-8 col-xl-7">
+        <div class="card card-amce shadow-sm">
+            <div class="card-header-amce p-3 d-flex justify-content-between align-items-center">
+                <span class="fw-bold fs-5 text-dark">
+                    <i class="bi bi-person-gear me-2 text-primary"></i>{{ title }}
+                </span>
+                <a href="{% url 'user_management_list' %}" class="btn btn-outline-secondary btn-sm">
+                    &larr; Back to Users
+                </a>
+            </div>
+
+            <div class="card-body p-4">
+                {% if form.errors %}
+                    <div class="alert alert-danger d-flex align-items-center gap-2 mb-4">
+                        <i class="bi bi-exclamation-octagon-fill fs-5"></i>
+                        <div>Please correct the errors indicated below.</div>
+                    </div>
+                {% endif %}
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <!-- Role Selection Box -->
+                    <div class="p-3 mb-4 rounded border bg-light">
+                        <label class="fw-bold text-dark mb-2 d-block">
+                            <i class="bi bi-shield-check text-primary me-1"></i>Step 1: Select Account Role
+                        </label>
+                        <div class="small text-muted mb-3">
+                            The system will automatically configure security groups, dashboard access, and evaluator privileges.
+                        </div>
+
+                        <div class="vstack gap-2">
+                            {% for radio in form.role %}
+                            <div class="form-check p-2 bg-white rounded border {% if radio.is_checked %}border-primary bg-primary-subtle{% endif %}">
+                                {{ radio.tag }}
+                                <label class="form-check-label fw-semibold ms-2" for="{{ radio.id_for_label }}">
+                                    {{ radio.choice_label }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.role.errors %}
+                            <div class="text-danger small mt-1">{{ form.role.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Personal Information -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-secondary border-bottom pb-2 mb-3">
+                            <i class="bi bi-person-lines-fill me-1"></i>Official Email &amp; Account Identity
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label small fw-semibold">Official AMCE Email / Username <span class="text-danger">*</span></label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger small mt-1">{{ form.email.errors|striptags }}</div>
+                                {% endif %}
+                                <div class="text-muted small mt-1">
+                                    <i class="bi bi-info-circle me-1"></i>The staff email address will automatically serve as their login <strong>Username</strong>.
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">First Name <span class="text-danger">*</span></label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                    <div class="text-danger small mt-1">{{ form.first_name.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Last Name / Surname <span class="text-danger">*</span></label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                    <div class="text-danger small mt-1">{{ form.last_name.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Password / Security Credentials -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-secondary border-bottom pb-2 mb-3">
+                            <i class="bi bi-key-fill me-1"></i>Security Credentials {% if not is_create %}<span class="text-muted fw-normal small">(Optional - leave blank to keep current password)</span>{% endif %}
+                        </h6>
+                        <div class="row g-3">
+                            {% if is_create %}
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Password <span class="text-danger">*</span></label>
+                                {{ form.password1 }}
+                                {% if form.password1.errors %}
+                                    <div class="text-danger small mt-1">{{ form.password1.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Confirm Password <span class="text-danger">*</span></label>
+                                {{ form.password2 }}
+                                {% if form.password2.errors %}
+                                    <div class="text-danger small mt-1">{{ form.password2.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">New Password</label>
+                                {{ form.new_password }}
+                                {% if form.new_password.errors %}
+                                    <div class="text-danger small mt-1">{{ form.new_password.errors|striptags }}</div>
+                                {% endif %}
+                                <div class="text-muted" style="font-size: 0.75rem;">Only enter if you wish to reset or change it.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Confirm New Password</label>
+                                {{ form.confirm_password }}
+                                {% if form.confirm_password.errors %}
+                                    <div class="text-danger small mt-1">{{ form.confirm_password.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+
+                    <!-- Hospital / Evaluator Profile Details -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-secondary border-bottom pb-2 mb-3">
+                            <i class="bi bi-hospital me-1"></i>Hospital Profile &amp; Department Mapping
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Department</label>
+                                {{ form.department }}
+                                <div class="text-muted" style="font-size: 0.75rem;">Assigned clinical or administrative unit (e.g. IT, Nursing, Oncology)</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Official Designation / Title</label>
+                                {{ form.designation }}
+                                <div class="text-muted" style="font-size: 0.75rem;">e.g. IT Systems Specialist, Nurse Manager, Chief Medical Officer</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Special Capability Permissions (Executive Dashboard & Excel Export) -->
+                    <div class="mb-4 p-3 bg-light rounded border">
+                        <h6 class="fw-bold text-dark border-bottom pb-2 mb-2">
+                            <i class="bi bi-shield-lock-fill text-warning me-1"></i>Special Capability Permissions
+                        </h6>
+                        <div class="text-muted small mb-3">
+                            Fine-grained permissions for individual users or Evaluators. Administrators and Executive Viewers have these permissions enabled by default.
+                        </div>
+
+                        <div class="vstack gap-3">
+                            <div class="form-check form-switch p-2 bg-white rounded border ps-5">
+                                {{ form.grant_executive_dashboard }}
+                                <label class="form-check-label fw-bold text-dark" for="{{ form.grant_executive_dashboard.id_for_label }}">
+                                    <i class="bi bi-bar-chart-line-fill text-primary me-1"></i>Executive Dashboard &amp; Sensitivity Simulator
+                                </label>
+                                <div class="text-muted small">
+                                    Enables viewing the executive matrix, sensitivity simulator, and multi-vendor rankings.
+                                </div>
+                            </div>
+
+                            <div class="form-check form-switch p-2 bg-white rounded border ps-5">
+                                {{ form.grant_export_excel }}
+                                <label class="form-check-label fw-bold text-dark" for="{{ form.grant_export_excel.id_for_label }}">
+                                    <i class="bi bi-file-earmark-excel-fill text-success me-1"></i>Export Multi-Vendor Scorecard Excel (.xlsx)
+                                </label>
+                                <div class="text-muted small">
+                                    Enables downloading the comprehensive, formatted Microsoft Excel multi-vendor summary scorecard.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="pt-3 border-top d-flex justify-content-between align-items-center">
+                        <a href="{% url 'user_management_list' %}" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-amce-primary px-4">
+                            <i class="bi bi-check-circle me-1"></i> Save User Account
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

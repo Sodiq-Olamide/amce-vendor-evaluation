@@ -1,0 +1,91 @@
+# ==============================================================================
+# AMCE Vendor Evaluation Management System (VEMS) - Git Ignore Configuration
+# ==============================================================================
+
+# 1. Environment & Sensitive Credentials (CRITICAL)
+.env
+.env.*
+!.env.example
+env.txt
+*.pem
+*.key
+*.cert
+*.crt
+service_account.json
+credentials.json
+
+# 2. Python & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# 3. Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+env.bak/
+venv.bak/
+
+# 4. Django Runtime & SQLite Database
+*.sqlite3
+*.sqlite3-journal
+*.sqlite3-shm
+*.sqlite3-wal
+db.sqlite3
+staticfiles/
+media/
+*.log
+local_settings.py
+
+# 5. Unit Tests, Coverage & Caches
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# 6. IDEs & Operating System Artifacts
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# 7. Temporary & Scratch Extraction Dumps
+scratch/
+full_forms_dump.json
+full_scoring_dump.json
+sheets_overview.json
+*.tmp
+temp_*.xlsx

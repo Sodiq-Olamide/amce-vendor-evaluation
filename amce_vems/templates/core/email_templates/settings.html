@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Email Message Setup - AMCE VEMS Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0 pb-5">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-3 border-bottom">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <a href="{% url 'admin_hub' %}" class="text-decoration-none text-muted small"><i class="bi bi-arrow-left"></i> Admin Hub</a>
+                <span class="text-muted small">/</span>
+                <span class="text-muted small">Email Settings &amp; Gateway</span>
+            </div>
+            <h2 class="h3 fw-bold text-dark mb-0">
+                <i class="bi bi-gear-wide-connected text-primary me-2"></i>Email Gateway &amp; Delivery Configuration
+            </h2>
+            <p class="text-muted small mb-0">Review the active SMTP, Microsoft 365 Exchange, or Console gateway parameters, and dispatch live verification test emails.</p>
+        </div>
+        <div class="mt-3 mt-md-0 d-flex gap-2">
+            <a href="{% url 'admin_email_templates_list' %}" class="btn btn-outline-secondary btn-sm px-3">
+                <i class="bi bi-envelope-paper me-1"></i> Message Templates
+            </a>
+            <a href="{% url 'admin_email_logs_list' %}" class="btn btn-outline-secondary btn-sm px-3">
+                <i class="bi bi-clock-history me-1"></i> Delivery Audit Logs
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Gateway Configuration Card -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-3 mb-4">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold text-dark mb-0"><i class="bi bi-hdd-network-fill text-primary me-2"></i>Active Mail Delivery Subsystem</h6>
+                    {% if subsystem_status == "Operational" %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                            <i class="bi bi-check-circle-fill me-1"></i>Operational (Live SMTP)
+                        </span>
+                    {% elif subsystem_status == "Non-operational" %}
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i>Non-operational
+                        </span>
+                    {% else %}
+                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1">
+                            <i class="bi bi-code-square me-1"></i>Development Mode (Console Only)
+                        </span>
+                    {% endif %}
+                </div>
+                <div class="card-body p-4">
+                    {% if subsystem_status == "Non-operational" %}
+                        <div class="alert alert-danger d-flex align-items-center mb-4 rounded-3">
+                            <i class="bi bi-exclamation-octagon-fill fs-4 me-3"></i>
+                            <div>
+                                <strong class="d-block">Mail Delivery Subsystem is Non-operational</strong>
+                                <span class="small">Production SMTP backend is selected, but <code>EMAIL_HOST_USER</code> and/or <code>EMAIL_HOST_PASSWORD</code> are missing. Emails will fail until SMTP credentials are provided in <code>.env</code>.</span>
+                            </div>
+                        </div>
+                    {% elif subsystem_status != "Operational" %}
+                        <div class="alert alert-warning d-flex align-items-center mb-4 rounded-3">
+                            <i class="bi bi-info-circle-fill fs-4 me-3"></i>
+                            <div>
+                                <strong class="d-block">Development Simulation Mode Active</strong>
+                                <span class="small">The active backend is <code>{{ email_backend }}</code>. Outbound emails are printed to the console / audit log only and are <strong>NOT</strong> delivered to real recipient inboxes over the internet.</span>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="table-responsive">
+                        <table class="table table-borderless align-middle mb-0" style="font-size: 0.9rem;">
+                            <tbody>
+                                <tr class="border-bottom">
+                                    <td class="text-muted fw-semibold" style="width: 200px;">Active Email Backend:</td>
+                                    <td class="font-monospace fw-bold text-primary">{{ email_backend }}</td>
+                                </tr>
+                                <tr class="border-bottom">
+                                    <td class="text-muted fw-semibold">SMTP Host / Server:</td>
+                                    <td class="font-monospace text-dark">{{ email_host }}</td>
+                                </tr>
+                                <tr class="border-bottom">
+                                    <td class="text-muted fw-semibold">Port &amp; Security:</td>
+                                    <td>
+                                        <span class="font-monospace">{{ email_port }}</span> 
+                                        {% if email_use_tls %}
+                                            <span class="badge bg-info-subtle text-info border ms-2">TLS Enabled</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary ms-2">Standard</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr class="border-bottom">
+                                    <td class="text-muted fw-semibold">Authenticated SMTP User:</td>
+                                    <td class="font-monospace text-secondary">{{ email_host_user }}</td>
+                                </tr>
+                                <tr class="border-bottom">
+                                    <td class="text-muted fw-semibold">Default Sender Display:</td>
+                                    <td class="font-monospace text-dark">{{ default_from_email }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted fw-semibold">Portal Domain Prefix:</td>
+                                    <td class="font-monospace text-dark">{{ site_domain }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="alert alert-light border mt-4 mb-0 small text-muted">
+                        <i class="bi bi-info-circle text-primary me-1"></i>To enable live external email delivery to user inboxes (Office 365 / Exchange), configure <code>EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend</code>, <code>EMAIL_HOST_USER</code>, and <code>EMAIL_HOST_PASSWORD</code> in your <code>.env</code> file.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Delivery Verification Test Card -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="fw-bold text-dark mb-0"><i class="bi bi-send-check-fill text-success me-2"></i>Send Test Verification Email</h6>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-muted small mb-3">Dispatch an instant test notification to verify outbound mailbox routing and connectivity.</p>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="send_test_email" value="1">
+                        
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Recipient Email Address</label>
+                            {{ test_form.test_recipient }}
+                            <div class="text-muted small mt-1">Enter your own email address to verify delivery.</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                            <i class="bi bi-send me-1"></i> Send Verification Email
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Logs Section -->
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold text-dark mb-0"><i class="bi bi-journal-text text-secondary me-2"></i>Recent Outbound Activity</h6>
+                    <a href="{% url 'admin_email_logs_list' %}" class="btn btn-outline-secondary btn-sm">Full Audit Trail &rarr;</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 160px;">Timestamp</th>
+                                <th style="min-width: 180px;">Recipient</th>
+                                <th>Subject</th>
+                                <th style="width: 120px;">Event</th>
+                                <th style="width: 100px;" class="text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in recent_logs %}
+                            <tr>
+                                <td class="text-muted">{{ log.created_at|date:"Y-m-d H:i:s" }}</td>
+                                <td class="fw-semibold text-dark">{{ log.recipient_email }}</td>
+                                <td class="text-truncate" style="max-width: 320px;">{{ log.subject }}</td>
+                                <td><span class="badge bg-light text-dark border">{{ log.event_type }}</span></td>
+                                <td class="text-center">
+                                    {% if log.status == 'SENT' %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Sent (SMTP)</span>
+                                    {% elif log.status == 'SIMULATED' %}
+                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1">Simulated (Dev)</span>
+                                    {% elif log.status == 'FAILED' %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">Failed</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary px-2 py-1">{{ log.status }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">No outbound emails logged yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

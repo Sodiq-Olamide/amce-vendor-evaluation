@@ -1,0 +1,356 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Official Scorecards Dossier - All Submissions - AMCE</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .scorecard-sheet {
+            max-width: 960px;
+            margin: 2rem auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e2e8f0;
+            padding: 2.5rem;
+            page-break-after: always;
+        }
+
+        .scorecard-sheet:last-child {
+            page-break-after: avoid;
+        }
+
+        .table-scorecard th {
+            background-color: #f1f5f9 !important;
+            color: #334155;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.72rem;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid #cbd5e1;
+            padding: 0.75rem;
+        }
+
+        .table-scorecard td {
+            padding: 0.75rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .score-pill {
+            display: inline-block;
+            width: 36px;
+            height: 36px;
+            line-height: 34px;
+            text-align: center;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 0.92rem;
+        }
+
+        .score-5 { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+        .score-4 { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
+        .score-3 { background: #fef9c3; color: #a16207; border: 1px solid #fde047; }
+        .score-2 { background: #ffedd5; color: #c2410c; border: 1px solid #fdba74; }
+        .score-1 { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+        .score-0 { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
+
+        .audit-seal-box {
+            background: #f8fafc;
+            border: 1px dashed #94a3b8;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        /* Top Bar Floating Controls (Hidden in Print) */
+        .no-print-bar {
+            background: #0f172a;
+            color: #ffffff;
+            padding: 0.75rem 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        @media print {
+            .no-print-bar, .no-print {
+                display: none !important;
+            }
+            body {
+                background: #ffffff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .scorecard-sheet {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0.75rem !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Non-printable top action bar -->
+    <div class="no-print-bar d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-3">
+            <a href="{% url 'admin_submissions_list' %}" class="btn btn-outline-light btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Submissions
+            </a>
+            <span class="text-white-50 small">|</span>
+            <span class="fw-semibold text-white small">Complete Scorecard Dossier ({{ submissions_data|length }} Submissions)</span>
+            <span class="badge bg-primary">All Filtered Evaluations</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'admin_submissions_export_all_excel' %}?{{ query_string }}" class="btn btn-success btn-sm px-3 fw-bold">
+                <i class="bi bi-file-earmark-excel me-1"></i> Download All (Excel)
+            </a>
+            <button onclick="window.print()" class="btn btn-primary btn-sm px-4 fw-bold shadow-sm">
+                <i class="bi bi-printer-fill me-2"></i> Print All / Save PDF ({{ submissions_data|length }})
+            </button>
+        </div>
+    </div>
+
+    {% for item in submissions_data %}
+    <!-- Official Printable Sheet for Submission {{ item.sub.submission_id }} -->
+    <div class="scorecard-sheet">
+        <!-- Header with AMCE Official Logo & Title -->
+        <div class="d-flex justify-content-between align-items-start pb-4 mb-4 border-bottom border-2 border-dark">
+            <div class="d-flex align-items-center gap-3">
+                <img src="{% static 'img/amce_logo.jpg' %}" alt="AMCE Logo" style="height: 60px; object-fit: contain;" class="rounded border p-1 bg-white">
+                <div>
+                    <div class="text-uppercase fw-bold text-muted" style="font-size: 0.72rem; letter-spacing: 0.1em;">African Medical Centre of Excellence (AMCE) Abuja</div>
+                    <h1 class="h4 fw-bold text-dark mb-0">EHR Vendor Demonstration Evaluation Scorecard</h1>
+                    <div class="small text-muted">Audited &amp; Verified Individual Evaluator Assessment Record</div>
+                </div>
+            </div>
+            <div class="text-end">
+                <div class="badge bg-dark px-3 py-2 fs-6 font-monospace mb-1">{{ item.sub.submission_id }}</div>
+                <div class="small text-muted">Document {{ forloop.counter }} of {{ submissions_data|length }} &bull; {{ print_time|date:"Y-m-d H:i" }}</div>
+            </div>
+        </div>
+
+        <!-- Meta Specification Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="p-3 bg-light rounded-3 border h-100">
+                    <div class="text-uppercase fw-bold text-muted small mb-2"><i class="bi bi-person-badge me-1"></i> Evaluator Profile</div>
+                    <div class="fs-5 fw-bold text-dark">{{ item.sub.evaluator.user.get_full_name|default:item.sub.evaluator.user.username }}</div>
+                    <div class="text-muted small"><strong>Department:</strong> {{ item.sub.evaluator.department.name|default:"General Clinical" }}</div>
+                    <div class="text-muted small"><strong>Designation:</strong> {{ item.sub.evaluator.designation|default:"Clinical Specialist" }}</div>
+                    <div class="text-muted small"><strong>Employee ID:</strong> <span class="mono">{{ item.sub.evaluator.employee_id|default:"-" }}</span></div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="p-3 bg-light rounded-3 border h-100">
+                    <div class="text-uppercase fw-bold text-muted small mb-2"><i class="bi bi-buildings me-1"></i> Demonstration Session</div>
+                    <div class="fs-5 fw-bold text-primary">{{ item.sub.vendor.name }}</div>
+                    <div class="text-muted small"><strong>Solution:</strong> {{ item.sub.vendor.solution_name }} {% if item.sub.vendor.solution_version %}(v{{ item.sub.vendor.solution_version }}){% endif %}</div>
+                    <div class="text-muted small"><strong>Calendar Slot:</strong> {{ item.sub.calendar.day_label }} ({{ item.sub.calendar.evaluation_date|date:"l, d F Y" }})</div>
+                    <div class="text-muted small"><strong>Cohort:</strong> #{{ item.sub.cohort.cohort_number }} - {{ item.sub.cohort.name }} (Weight: {{ item.sub.cohort.default_weight }}%)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overall Score Highlight Box -->
+        <div class="row g-3 mb-4">
+            <div class="col-sm-4">
+                <div class="card border-0 bg-primary bg-opacity-10 border-start border-4 border-primary rounded-3 p-3">
+                    <div class="text-muted small text-uppercase fw-bold">Cohort Weighted Score</div>
+                    <div class="display-6 fw-bold text-primary my-1">{{ item.sub.total_group_score|floatformat:2 }}%</div>
+                    <div class="small text-muted">Sum of weighted criteria scores</div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="card border-0 bg-secondary bg-opacity-10 border-start border-4 border-secondary rounded-3 p-3">
+                    <div class="text-muted small text-uppercase fw-bold">Average Raw Score</div>
+                    <div class="display-6 fw-bold text-dark my-1">{{ item.avg_score|floatformat:2 }} <span class="fs-6 text-muted">/ 5.0</span></div>
+                    <div class="small text-muted">{{ item.scored_criteria }} of {{ item.total_criteria }} criteria evaluated</div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="card border-0 bg-info bg-opacity-10 border-start border-4 border-info rounded-3 p-3">
+                    <div class="text-muted small text-uppercase fw-bold">Form Template &amp; Status</div>
+                    <div class="fs-5 fw-bold text-dark my-1">{{ item.sub.get_status_display }}</div>
+                    <div class="small text-muted">{{ item.sub.template.title }} (v{{ item.sub.template.version }})</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Criteria & Responses Scoring Grid -->
+        <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="fw-bold text-dark mb-0"><i class="bi bi-list-check me-2"></i>Detailed Criterion Evaluation Breakdown</h5>
+                <span class="text-muted small">Scored on standard 1 - 5 Likert Scale</span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-scorecard align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width: 55px;" class="text-center">#</th>
+                            <th style="min-width: 240px;">Capability / Live Demonstration Prompt</th>
+                            <th style="width: 80px;" class="text-center">Weight</th>
+                            <th style="width: 75px;" class="text-center">Score</th>
+                            <th style="width: 90px;" class="text-center">Weighted</th>
+                            <th>Evaluator Observations &amp; Evidence Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for resp in item.responses %}
+                        <tr>
+                            <td class="text-center fw-bold mono">#{{ resp.criterion.criterion_number }}</td>
+                            <td>
+                                <div class="fw-bold text-dark mb-1">{{ resp.criterion.name }}</div>
+                                <div class="small text-muted" style="line-height: 1.4;">{{ resp.criterion.demo_prompt }}</div>
+                            </td>
+                            <td class="text-center mono fw-semibold">{{ resp.criterion.weight_percentage }}%</td>
+                            <td class="text-center">
+                                {% if resp.score == 5 %}
+                                    <span class="score-pill score-5">5</span>
+                                {% elif resp.score == 4 %}
+                                    <span class="score-pill score-4">4</span>
+                                {% elif resp.score == 3 %}
+                                    <span class="score-pill score-3">3</span>
+                                {% elif resp.score == 2 %}
+                                    <span class="score-pill score-2">2</span>
+                                {% elif resp.score == 1 %}
+                                    <span class="score-pill score-1">1</span>
+                                {% else %}
+                                    <span class="score-pill score-0">{{ resp.score|default:"-" }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center mono fw-bold text-primary">
+                                {{ resp.weighted_score|floatformat:2 }}%
+                            </td>
+                            <td>
+                                {% if resp.evidence_notes %}
+                                    <div class="small text-dark">{{ resp.evidence_notes }}</div>
+                                {% else %}
+                                    <span class="small text-muted fst-italic">No specific notes recorded.</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">No criterion responses recorded in this submission.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <th colspan="2" class="text-end fw-bold">TOTAL COHORT SCORE:</th>
+                            <th class="text-center mono fw-bold">100.0%</th>
+                            <th class="text-center mono fw-bold">{{ item.avg_score|floatformat:2 }} avg</th>
+                            <th class="text-center mono fw-bold text-primary fs-6">{{ item.sub.total_group_score|floatformat:2 }}%</th>
+                            <th></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        {% if item.sub.general_notes %}
+        <div class="mb-4 p-3 bg-light rounded-3 border">
+            <h6 class="fw-bold text-dark mb-2"><i class="bi bi-chat-left-text me-1"></i> General Evaluator Summary Notes</h6>
+            <p class="small mb-0 text-dark" style="white-space: pre-wrap;">{{ item.sub.general_notes }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Cryptographic Audit & Verification Seal Box -->
+        <div class="audit-seal-box mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <i class="bi bi-shield-check text-success fs-4"></i>
+                        <span class="fw-bold text-dark text-uppercase small">Cryptographic Integrity &amp; Tamper Seal</span>
+                        {% if item.sub.status == 'LOCKED' %}
+                            <span class="badge bg-danger"><i class="bi bi-lock-fill"></i> Locked / Sealed</span>
+                        {% endif %}
+                    </div>
+                    <div class="small text-muted mb-1">
+                        This scorecard has been validated with a SHA-256 digital fingerprint digest generated across all scored responses and notes.
+                    </div>
+                    <div class="mono small text-break p-2 bg-white rounded border text-secondary font-monospace" style="font-size: 0.75rem;">
+                        <strong>DIGEST SHA-256:</strong> {{ item.sub.record_hash|default:"Unsealed / Pending Moderation" }}
+                    </div>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <div class="small text-muted"><strong>IP Address:</strong> {{ item.sub.ip_address|default:"127.0.0.1" }}</div>
+                    <div class="small text-muted"><strong>Submitted At:</strong> {{ item.sub.submitted_at|date:"Y-m-d H:i:s"|default:item.sub.created_at|date:"Y-m-d H:i:s" }}</div>
+                    {% if item.sub.locked_at %}
+                        <div class="small text-danger fw-bold"><strong>Locked At:</strong> {{ item.sub.locked_at|date:"Y-m-d H:i:s" }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Official Signature Lines -->
+        <div class="row pt-4 mt-4 border-top border-2">
+            <div class="col-4">
+                <div class="text-center">
+                    <div style="height: 45px; border-bottom: 1px solid #94a3b8;" class="d-flex align-items-end justify-content-center pb-1">
+                        <span class="fst-italic text-muted small">{{ item.sub.evaluator.user.get_full_name }}</span>
+                    </div>
+                    <div class="small fw-bold text-dark mt-1">Clinical Evaluator</div>
+                    <div class="text-muted" style="font-size: 0.72rem;">Signature &amp; Date</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="text-center">
+                    <div style="height: 45px; border-bottom: 1px solid #94a3b8;"></div>
+                    <div class="small fw-bold text-dark mt-1">Department Head / Moderator</div>
+                    <div class="text-muted" style="font-size: 0.72rem;">Signature &amp; Date</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="text-center">
+                    <div style="height: 45px; border-bottom: 1px solid #94a3b8;"></div>
+                    <div class="small fw-bold text-dark mt-1">VEMS Super Administrator</div>
+                    <div class="text-muted" style="font-size: 0.72rem;">Signature &amp; Seal</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Notice -->
+        <div class="text-center text-muted mt-4 pt-3 border-top" style="font-size: 0.7rem;">
+            African Medical Centre of Excellence (AMCE) Abuja &bull; Confidential Clinical &amp; Technical Vendor Evaluation Document &bull; Do not duplicate without authorization
+        </div>
+    </div>
+    {% empty %}
+    <div class="container py-5 text-center text-muted">
+        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+        <h4>No Submissions Found to Print</h4>
+        <p>There are no evaluation scorecards matching the selected filters.</p>
+        <a href="{% url 'admin_submissions_list' %}" class="btn btn-outline-primary">Return to Submissions</a>
+    </div>
+    {% endfor %}
+
+</body>
+</html>
