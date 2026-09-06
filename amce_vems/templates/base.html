@@ -32,9 +32,9 @@
     </header>
 
     <div class="container-fluid p-0">
-        <div class="row g-0">
+        <div class="app-layout-row g-0">
             <!-- Sidebar (Offcanvas on mobile, fixed left column on md+) -->
-            <div class="sidebar col-md-3 col-lg-2 p-0 bg-amce-sidebar offcanvas-md offcanvas-start" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
+            <div class="sidebar p-0 bg-amce-sidebar offcanvas-md offcanvas-start" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
                 <div class="offcanvas-header p-3 border-bottom border-secondary border-opacity-25 d-md-none">
                     <div class="d-flex align-items-center gap-2">
                         <img src="/static/img/amce_logo.jpg" alt="AMCE Logo" class="brand-logo-img">
@@ -154,7 +154,7 @@
             </div>
 
             <!-- Main Content Area with Sidebar -->
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-3 main-content-wrapper">
+            <main class="main-content-wrapper px-md-4 py-3">
                 {% if messages %}
                     {% for message in messages %}
                         <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
